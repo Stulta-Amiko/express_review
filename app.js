@@ -1,11 +1,15 @@
 import express from 'express'
 import bodyParser from 'body-parser'
+import mongoose from 'mongoose'
+import dotenv from 'dotenv'
 
 import placesRouter from './routes/places-routes.js'
 import usersRouter from './routes/users-routes.js'
 import HttpError from './models/http-error.js'
 
+dotenv.config()
 const app = express()
+const dbConnection = process.env.DB_CONNECT
 
 app.use(bodyParser.json())
 
@@ -27,4 +31,11 @@ app.use((err, req, res, next) => {
         .json({ message: err.message || 'An unknown error occured' })
 })
 
-app.listen(8000)
+mongoose
+    .connect(dbConnection)
+    .then(() => {
+        app.listen(8000)
+    })
+    .catch((err) => {
+        console.log(err)
+    })

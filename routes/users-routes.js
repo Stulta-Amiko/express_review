@@ -2,6 +2,7 @@ import express from 'express'
 import { check } from 'express-validator'
 
 import usersController from '../controllers/users-controller.js'
+import placesController from '../controllers/places-controller.js'
 
 const router = express.Router()
 

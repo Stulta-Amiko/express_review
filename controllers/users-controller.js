@@ -2,6 +2,7 @@ import { v4 as uuid } from 'uuid'
 import { validationResult } from 'express-validator'
 
 import HttpError from '../models/http-error.js'
+import User from '../models/user.js'
 
 const DUMMY_USERS = [{
     id: 'u1',
@@ -13,28 +14,51 @@ const getUsers = (req, res, next) => {
     res.status(200).json({ users: DUMMY_USERS })
 }
 
-const signup = (req, res, next) => {
+const signup = async(req, res, next) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         console.log(errors)
-        throw new HttpError('Invalid inputs passed please check your data', 422)
+        const error = new HttpError(
+            'Invalid inputs passed please check your data',
+            422
+        )
+        return next(error)
     }
-    const { name, email, password } = req.body
+    const { name, email, password, places } = req.body
 
-    const hasUser = DUMMY_USERS.find((u) => u.email === email)
-    if (hasUser) {
-        throw new HttpError('Could not create user, email already exists', 422)
+    let existingUser
+
+    try {
+        existingUser = await User.findOne({ email: email })
+    } catch (err) {
+        const error = new HttpError('Singing up failed please try again later', 500)
+        return next(error)
     }
-    const createdUser = {
-        id: uuid(),
-        name, //name: name
+
+    if (existingUser) {
+        const error = new HttpError(
+            'User exists already, please login instead',
+            422
+        )
+        return next(error)
+    }
+
+    const createdUser = new User({
+        name,
         email,
+        image: 'https://codechacha.com/static/653ef1438ef7c8ed7104a02a0583f949/8c76f/ko-653ef143.png',
         password,
+        places,
+    })
+
+    try {
+        await createdUser.save()
+    } catch (err) {
+        const error = new HttpError('Signing up failed, please try agin', 500)
+        return next(error)
     }
 
-    DUMMY_USERS.push(createdUser)
-
-    res.status(201).json({ users: createdUser })
+    res.status(201).json({ users: createdUser.toObject({ getters: true }) })
 }
 
 const login = (req, res, next) => {
