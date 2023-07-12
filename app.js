@@ -2,6 +2,8 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
+import fs from 'fs'
+import path from 'path'
 
 import placesRouter from './routes/places-routes.js'
 import usersRouter from './routes/users-routes.js'
@@ -12,6 +14,8 @@ const app = express()
 const dbConnection = process.env.DB_CONNECT
 
 app.use(bodyParser.json())
+
+app.use('/uploads/images', express.static(path.join('uploads', 'images')))
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -34,6 +38,11 @@ app.use((req, res, next) => {
 })
 
 app.use((err, req, res, next) => {
+    if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+            console.log(err)
+        })
+    }
     if (res.headerSent) {
         return next(err)
     }

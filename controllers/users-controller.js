@@ -46,7 +46,7 @@ const signup = async(req, res, next) => {
     const createdUser = new User({
         name,
         email,
-        image: 'https://codechacha.com/static/653ef1438ef7c8ed7104a02a0583f949/8c76f/ko-653ef143.png',
+        image: req.file.path,
         password,
         places: [],
     })

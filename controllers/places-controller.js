@@ -119,7 +119,7 @@ const updatePlace = async(req, res, next) => {
         )
         return next(error)
     }
-    const { title, description } = req.body
+    const { title, description, address } = req.body
     const placeId = req.params.pid
 
     let place
@@ -135,6 +135,7 @@ const updatePlace = async(req, res, next) => {
 
     place.title = title
     place.description = description
+    place.address = address
 
     try {
         await place.save()
