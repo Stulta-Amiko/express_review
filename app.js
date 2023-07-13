@@ -50,6 +50,7 @@ app.use((err, req, res, next) => {
         .status(err.code || 500)
         .json({ message: err.message || 'An unknown error occured' })
 })
+
 mongoose
     .connect(dbConnection)
     .then(() => {
