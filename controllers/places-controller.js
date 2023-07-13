@@ -27,7 +27,6 @@ const getPlaceById = async(req, res, next) => {
 
     res.json({ place: place.toObject({ getters: true }) })
 }
-
 const getPlacesByUserId = async(req, res, next) => {
     const userId = req.params.uid
 
