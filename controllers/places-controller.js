@@ -1,5 +1,6 @@
 import { validationResult } from 'express-validator'
 import mongoose from 'mongoose'
+import fs from 'fs'
 
 import Place from '../models/place.js'
 import HttpError from '../models/http-error.js'
@@ -8,6 +9,7 @@ import User from '../models/user.js'
 
 const getPlaceById = async(req, res, next) => {
     const placeId = req.params.pid
+
     let place
     try {
         place = await Place.findById(placeId)
@@ -76,7 +78,7 @@ const createPlace = async(req, res, next) => {
         description,
         address,
         location: coordinates,
-        image: 'https://www.kkday.com/ko/blog/wp-content/uploads/%EB%89%B4%EC%9A%95-3%EB%8C%80-%EC%A0%84%EB%A7%9D%EB%8C%80-%EC%97%A0%ED%8C%8C%EC%9D%B4%EC%96%B4-%EC%8A%A4%ED%85%8C%EC%9D%B4%ED%8A%B8-%EB%B9%8C%EB%94%A9-%EC%99%B8%EA%B4%80.jpg',
+        image: req.file.path,
         creator,
     })
 
@@ -133,6 +135,11 @@ const updatePlace = async(req, res, next) => {
         return next(error)
     }
 
+    if (place.creator.toString() !== req.userData.userId) {
+        const error = new HttpError('You are not allowed to edit this place', 401)
+        return next(error)
+    }
+
     place.title = title
     place.description = description
     place.address = address
@@ -169,6 +176,13 @@ const deletePlace = async(req, res, next) => {
         return next(error)
     }
 
+    if (place.creator.id !== req.userData.userId) {
+        const error = new HttpError('You are not allowed to edit this place', 401)
+        return next(error)
+    }
+
+    const imagePath = place.image
+
     try {
         const sess = await mongoose.startSession()
         sess.startTransaction()
@@ -183,6 +197,10 @@ const deletePlace = async(req, res, next) => {
         )
         return next(error)
     }
+
+    fs.unlink(imagePath, (err) => {
+        console.log(err)
+    })
 
     res.status(200).json({ message: 'Deleted place.' })
 }
