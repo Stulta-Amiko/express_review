@@ -12,7 +12,7 @@ const JWTKEY = process.env.TOKEN_KEY
 const getUsers = async(req, res, next) => {
     let users
     try {
-        users = await User.find({}, '-password')
+        users = await User.find({}, '-password') //비밀번호 빼고전송
     } catch (err) {
         const error = new HttpError('Fetching users failed, Please try again later')
         return next(error)
